@@ -17,17 +17,14 @@ RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
 	bash-completion \
 	bc \
-	clang-7 \
 	ca-certificates \
 	curl \
 	dkms \
 	gnupg2 \
 	gcc \
 	jq \
-	libc6-dev \
 	libelf-dev \
 	libyaml-0-2 \
-	llvm-7 \
 	netcat \
 	xz-utils \
 	libmpc3 \
@@ -37,17 +34,44 @@ RUN apt-get update \
 	libatomic1 \
 	liblsan0 \
 	libtsan0 \
-	libmpx2 \
 	libquadmath0 \
 	libcc1-0 \
 	&& rm -rf /var/lib/apt/lists/*
+
+# && curl -L -o libc6-dev_2.28-10_amd64.deb https://snapshot.debian.org/archive/debian/20210827T030044Z/pool/main/g/glibc/libc6-dev_2.28-10_amd64.deb \
+
+# gcc 8 is no longer included in debian stable, but we need it to
+# build kernel modules on the default debian-based ami used by
+# kops. So grab copies we've saved from debian snapshots with the
+# prefix https://snapshot.debian.org/archive/debian/20210827T030044Z
+# or so.
+RUN curl -L -o cpp-8_8.3.0-6_amd64.deb https://snapshot.debian.org/archive/debian/20210827T030044Z/pool/main/g/gcc-8/cpp-8_8.3.0-6_amd64.deb \
+	&& curl -L -o gcc-8-base_8.3.0-6_amd64.deb https://snapshot.debian.org/archive/debian/20210827T030044Z/pool/main/g/gcc-8/gcc-8-base_8.3.0-6_amd64.deb \
+	&& curl -L -o gcc-8_8.3.0-6_amd64.deb https://snapshot.debian.org/archive/debian/20210827T030044Z/pool/main/g/gcc-8/gcc-8_8.3.0-6_amd64.deb \
+	&& curl -L -o libasan5_8.3.0-6_amd64.deb https://snapshot.debian.org/archive/debian/20210827T030044Z/pool/main/g/gcc-8/libasan5_8.3.0-6_amd64.deb \
+	&& curl -L -o libgcc-8-dev_8.3.0-6_amd64.deb https://snapshot.debian.org/archive/debian/20210827T030044Z/pool/main/g/gcc-8/libgcc-8-dev_8.3.0-6_amd64.deb \
+	&& curl -L -o libisl19_0.20-2_amd64.deb https://snapshot.debian.org/archive/debian/20210630T203321Z/pool/main/i/isl/libisl19_0.20-2_amd64.deb \
+	&& curl -L -o libmpx2_8.3.0-6_amd64.deb https://snapshot.debian.org/archive/debian/20210827T030044Z/pool/main/g/gcc-8/libmpx2_8.3.0-6_amd64.deb \
+	&& dpkg -i cpp-8_8.3.0-6_amd64.deb gcc-8-base_8.3.0-6_amd64.deb gcc-8_8.3.0-6_amd64.deb libasan5_8.3.0-6_amd64.deb libgcc-8-dev_8.3.0-6_amd64.deb libisl19_0.20-2_amd64.deb libmpx2_8.3.0-6_amd64.deb \
+	&& rm -rf cpp-8_8.3.0-6_amd64.deb gcc-8-base_8.3.0-6_amd64.deb gcc-8_8.3.0-6_amd64.deb libasan5_8.3.0-6_amd64.deb libgcc-8-dev_8.3.0-6_amd64.deb libisl19_0.20-2_amd64.deb libmpx2_8.3.0-6_amd64.deb
+
+# # # llvm-7 and some related packages (e.g. clang-7) are no longer included in debian stable.
+# # # Grab copies we've saved from debian snapshots with the prefix https://snapshot.debian.org/archive/debian/20210827T030044Z
+# # RUN curl -L -o clang.deb https://snapshot.debian.org/archive/debian/20210630T203321Z/pool/main/l/llvm-toolchain-7/clang-7_7.0.1-8%2Bdeb10u2_amd64.deb \
+# # 		&& curl -L -o llvm7.deb https://snapshot.debian.org/archive/debian/20210630T203321Z/pool/main/l/llvm-toolchain-7/libllvm7_7.0.1-8%2Bdeb10u2_amd64.deb \
+# # 		#&& curl -L -o libedit2.deb https://snapshot.debian.org/archive/debian/20210630T203321Z/pool/main/libe/libedit/libedit2_3.1-20140620-2_amd64.deb \
+# # 		#&& curl -L -o multiarch-support.deb https://snapshot.debian.org/archive/debian/20210630T203321Z/pool/main/g/glibc/multiarch-support_2.28-10_amd64.deb \
+# #         #&& dpkg -i multiarch-support.deb \
+# # 		#&& dpkg -i libedit2.deb  clang.deb \
+# # 		&& dpkg -i llvm7.deb clang.deb \
+# #         && rm -f *.deb
+
 
 # gcc 6 is no longer included in debian stable, but we need it to
 # build kernel modules on the default debian-based ami used by
 # kops. So grab copies we've saved from debian snapshots with the
 # prefix https://snapshot.debian.org/archive/debian/20170517T033514Z
 # or so.
-
 RUN curl -L -o cpp-6_6.3.0-18_amd64.deb https://download.falco.org/dependencies/cpp-6_6.3.0-18_amd64.deb \
 	&& curl -L -o gcc-6-base_6.3.0-18_amd64.deb https://download.falco.org/dependencies/gcc-6-base_6.3.0-18_amd64.deb \
 	&& curl -L -o gcc-6_6.3.0-18_amd64.deb https://download.falco.org/dependencies/gcc-6_6.3.0-18_amd64.deb \
@@ -64,7 +88,6 @@ RUN curl -L -o cpp-6_6.3.0-18_amd64.deb https://download.falco.org/dependencies/
 # build centos kernels, which are 3.x based and explicitly want a gcc
 # version 3, 4, or 5 compiler. So grab copies we've saved from debian
 # snapshots with the prefix https://snapshot.debian.org/archive/debian/20190122T000000Z.
-
 RUN curl -L -o cpp-5_5.5.0-12_amd64.deb https://download.falco.org/dependencies/cpp-5_5.5.0-12_amd64.deb \
 	&& curl -L -o gcc-5-base_5.5.0-12_amd64.deb https://download.falco.org/dependencies/gcc-5-base_5.5.0-12_amd64.deb \
 	&& curl -L -o gcc-5_5.5.0-12_amd64.deb https://download.falco.org/dependencies/gcc-5_5.5.0-12_amd64.deb \
